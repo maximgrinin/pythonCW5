@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  insta:
+    image: maximgrinin/battlegame_app:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    ports:
+      - 5055:5000
