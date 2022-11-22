@@ -109,7 +109,7 @@ def choose_enemy():
                   "armors": equipment.get_armors_names()
                   }
         return render_template("hero_choosing.html", result=result)
-    if request.method == 'POST':
+    if request.method == "POST":
         name = request.form.get("name", "Joe Blow")
         name = "Joe Blow" if name == "" else name
         enemy = EnemyUnit(name=name, unit_class=unit_classes[request.form.get("unit_class")])

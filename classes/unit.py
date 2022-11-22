@@ -34,13 +34,11 @@ class BaseUnit(ABC):
     def equip_weapon(self, weapon: Weapon) -> str:
         # Присваиваем нашему герою новое оружие.
         self.weapon = weapon
-
         return f"{self.name} экипирован оружием {self.weapon.name}"
 
     def equip_armor(self, armor: Armor) -> str:
         # Одеваем новую броню.
         self.armor = armor
-
         return f"{self.name} экипирован броней {self.weapon.name}"
 
     def _count_damage(self, target: BaseUnit) -> float:
@@ -84,7 +82,6 @@ class BaseUnit(ABC):
         """
         if self._is_skill_used:
             return "Навык уже использован."
-
         return self.unit_class.skill.use(user=self, target=target)
 
 
@@ -98,14 +95,11 @@ class PlayerUnit(BaseUnit):
         """
         if self.stamina >= self.weapon.stamina_per_hit * self.unit_class.stamina:
             damage = self._count_damage(target)
-
             if damage:
                 return f"{self.name} используя {self.weapon.name} пробивает {target.armor.name} соперника и наносит " \
                        f"{damage} урона."
-
             return f"{self.name} используя {self.weapon.name} наносит удар, но {target.armor.name} cоперника его " \
                    f"останавливает."
-
         return f"{self.name} попытался использовать {self.weapon.name}, но у него не хватило выносливости."
 
 
@@ -123,12 +117,9 @@ class EnemyUnit(BaseUnit):
 
         if self.stamina >= self.weapon.stamina_per_hit * self.unit_class.stamina:
             damage = self._count_damage(target)
-
             if damage:
                 return f"{self.name} используя {self.weapon.name} пробивает {target.armor.name} и наносит Вам " \
                        f"{damage} урона."
-
             return f"{self.name} используя {self.weapon.name} наносит удар, но Ваш(а) {target.armor.name} его " \
                    f"останавливает."
-
         return f"{self.name} попытался использовать {self.weapon.name}, но у него не хватило выносливости."
