@@ -24,12 +24,12 @@ class BaseUnit(ABC):
     @property
     def health_points(self) -> float:
         # Возвращаем аттрибут hp в красивом виде.
-        return self.hp
+        return round(self.hp, 1)
 
     @property
     def stamina_points(self) -> float:
         # Возвращаем аттрибут stamina в красивом виде.
-        return self.stamina
+        return round(self.stamina, 1)
 
     def equip_weapon(self, weapon: Weapon) -> str:
         # Присваиваем нашему герою новое оружие.
@@ -46,24 +46,18 @@ class BaseUnit(ABC):
     def _count_damage(self, target: BaseUnit) -> float:
         # Эта функция должна содержать:
         # логику расчёта урона игрока,
-        self_damage = round(self.weapon.damage * self.unit_class.attack, 1)
-
         # логику расчёта брони цели, если у защищающегося не хватает выносливости, его броня игнорируется,
-        if target.stamina > target.armor.stamina_per_turn:
-            target_armor = round(target.armor.defence * target.unit_class.armor, 1)
-        else:
-            target_armor = 0
-
-        damage = round(self_damage - target_armor, 1)
-        damage = damage if damage > 0 else 0
-
         # здесь же происходит уменьшение выносливости атакующего при ударе,
         # и уменьшение выносливости защищающегося при использовании брони.
-        self.stamina = round(self.stamina_points - self.weapon.stamina_per_hit, 1)
-        if target_armor:
-            target.stamina = round(target.stamina_points - target.armor.stamina_per_turn, 1)
+        damage = round(self.weapon.damage * self.unit_class.attack, 1)
+        self.stamina = round(self.stamina - self.weapon.stamina_per_hit * self.unit_class.stamina, 1)
+
+        if target.stamina > target.armor.stamina_per_turn * target.unit_class.stamina:
+            target.stamina = round(target.stamina_points - target.armor.stamina_per_turn * target.unit_class.stamina, 1)
+            damage = round(damage - target.armor.defence * target.unit_class.armor, 1)
 
         # После всех расчетов цель получает урон - target.get_damage(damage)
+        damage = damage if damage > 0 else 0
         target.get_damage(damage)
 
         # и возвращаем предполагаемый урон для последующего вывода пользователю в текстовом виде.
@@ -88,10 +82,10 @@ class BaseUnit(ABC):
         если умение не использовано, тогда выполняем функцию self.unit_class.skill.use(user=self, target=target)
         и уже эта функция вернет нам строку, которая характеризует выполнение умения.
         """
-        if not self._is_skill_used:
-            return self.unit_class.skill.use(user=self, target=target)
+        if self._is_skill_used:
+            return "Навык уже использован."
 
-        return "Навык уже использован."
+        return self.unit_class.skill.use(user=self, target=target)
 
 
 class PlayerUnit(BaseUnit):
@@ -102,7 +96,7 @@ class PlayerUnit(BaseUnit):
         здесь происходит проверка достаточно ли выносливости для нанесения удара,
         вызывается функция self._count_damage(target), а также возвращается результат в виде строки.
         """
-        if self.stamina > self.weapon.stamina_per_hit:
+        if self.stamina >= self.weapon.stamina_per_hit * self.unit_class.stamina:
             damage = self._count_damage(target)
 
             if damage:
@@ -124,10 +118,10 @@ class EnemyUnit(BaseUnit):
         Например, для этих целей можно использовать функцию randint из библиотеки random.
         Если умение не применено, противник наносит простой удар, где также используется функция _count_damage(target)
         """
-        if randint(0, 10) == 10 and not self._is_skill_used:
-            return self.unit_class.skill.use(user=self, target=target)
+        if randint(0, 10) == 10 and not self._is_skill_used and self.stamina >= self.unit_class.skill.stamina:
+            return self.use_skill(target)
 
-        if self.stamina > self.weapon.stamina_per_hit:
+        if self.stamina >= self.weapon.stamina_per_hit * self.unit_class.stamina:
             damage = self._count_damage(target)
 
             if damage:

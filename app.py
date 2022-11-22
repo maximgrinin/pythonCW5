@@ -1,14 +1,14 @@
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from classes.base import Arena
 from classes.classes import unit_classes
 from classes.equipment import Equipment
-from classes.unit import PlayerUnit, EnemyUnit
+from classes.unit import PlayerUnit, EnemyUnit, BaseUnit
 
 app = Flask(__name__)
 
 heroes = {
-    "player": PlayerUnit,
-    "enemy": EnemyUnit
+    "player": BaseUnit,
+    "enemy": BaseUnit
 }
 
 # инициализируем класс арены
@@ -28,7 +28,7 @@ def menu_page():
 def start_fight():
     # Выполняем функцию start_game экземпляра класса арена и передаем ему необходимые аргументы.
     # Рендерим экран боя (шаблон fight.html).
-    arena.start_game(heroes["player"], heroes["enemy"])
+    arena.start_game(player=heroes.get("player"), enemy=heroes.get("enemy"))
     return render_template("fight.html", heroes=heroes, result="Бой начался!", battle_result=arena.battle_result)
 
 
@@ -79,17 +79,20 @@ def choose_hero():
     # на GET отрисовываем форму,
     # на POST отправляем форму и делаем редирект на эндпоинт choose enemy.
     if request.method == "GET":
-        result = {"weapons": equipment.get_weapons_names(), "armors": equipment.get_armors_names(),
-                  "header": "Выберите героя", "classes": unit_classes}
+        result = {"header": "Выберите героя",
+                  "classes": unit_classes,
+                  "weapons": equipment.get_weapons_names(),
+                  "armors": equipment.get_armors_names()
+                  }
         return render_template("hero_choosing.html", result=result)
     if request.method == "POST":
         name = request.form.get("name", "John Doe")
         name = "John Doe" if name == "" else name
-        player = PlayerUnit(name, unit_classes[request.form.get("unit_class")])
+        player = PlayerUnit(name=name, unit_class=unit_classes[request.form.get("unit_class")])
         player.equip_weapon(equipment.get_weapon(request.form.get("weapon")))
         player.equip_armor(equipment.get_armor(request.form.get("armor")))
         heroes["player"] = player
-        return redirect("/choose-enemy/")
+        return redirect(url_for("choose_enemy"))
     return jsonify("Неверный метод запроса"), 500
 
 
@@ -100,17 +103,20 @@ def choose_enemy():
     # также на GET отрисовываем форму,
     # а на POST отправляем форму и делаем редирект на начало битвы:
     if request.method == "GET":
-        result = {"weapons": equipment.get_weapons_names(), "armors": equipment.get_armors_names(),
-                  "header": "Выберите врага", "classes": unit_classes}
+        result = {"header": "Выберите врага",
+                  "classes": unit_classes,
+                  "weapons": equipment.get_weapons_names(),
+                  "armors": equipment.get_armors_names()
+                  }
         return render_template("hero_choosing.html", result=result)
     if request.method == 'POST':
         name = request.form.get("name", "Joe Blow")
         name = "Joe Blow" if name == "" else name
-        enemy = EnemyUnit(name, unit_classes[request.form.get("unit_class")])
+        enemy = EnemyUnit(name=name, unit_class=unit_classes[request.form.get("unit_class")])
         enemy.equip_weapon(equipment.get_weapon(request.form.get("weapon")))
         enemy.equip_armor(equipment.get_armor(request.form.get("armor")))
         heroes["enemy"] = enemy
-        return redirect("/fight/")
+        return redirect(url_for("start_fight"))
     return jsonify("Неверный метод запроса"), 500
 
 

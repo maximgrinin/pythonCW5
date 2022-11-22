@@ -60,7 +60,7 @@ class FuryPunch(Skill):
         # Именно здесь происходит уменьшение стамины у игрока применяющего умение и уменьшение здоровья цели.
         # Результат применения возвращаем строкой.
         self.user.stamina = round(self.user.stamina - self.stamina, 1)
-        self.target.hp = round(self.target.hp - self.damage, 1)
+        self.target.get_damage(self.damage)
         self.user._is_skill_used = True
 
         return f"{self.user.name} использует {self.name} и наносит {self.damage} урона сопернику."
@@ -77,7 +77,7 @@ class HardShot(Skill):
         # Именно здесь происходит уменьшение стамины у игрока применяющего умение и уменьшение здоровья цели.
         # Результат применения возвращаем строкой.
         self.user.stamina = round(self.user.stamina - self.stamina, 1)
-        self.target.hp = round(self.target.hp - self.damage, 1)
+        self.target.get_damage(self.damage)
         self.user._is_skill_used = True
 
         return f"{self.user.name} использует {self.name} и наносит {self.damage} урона сопернику."

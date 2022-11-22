@@ -1,5 +1,5 @@
 from typing import Optional
-from classes.unit import PlayerUnit, EnemyUnit
+from classes.unit import BaseUnit
 
 
 class BaseSingleton(type):
@@ -13,13 +13,13 @@ class BaseSingleton(type):
 
 
 class Arena(metaclass=BaseSingleton):
-    STAMINA_PER_ROUND = 3
+    STAMINA_PER_ROUND = 1
     player = None
     enemy = None
     game_is_running = False
     battle_result = None
 
-    def start_game(self, player: PlayerUnit, enemy: EnemyUnit):
+    def start_game(self, player: BaseUnit, enemy: BaseUnit):
         # Начало игры -> None.
         # Присваиваем экземпляру класса аттрибуты "игрок" и "противник",
         # а также выставляем True для свойства "началась ли игра"
@@ -34,19 +34,16 @@ class Arena(metaclass=BaseSingleton):
         # Игрок проиграл битву, Игрок выиграл битву, Ничья и сохраняем его в аттрибуте (self.battle_result).
         # Если Здоровья игроков в порядке то ничего не происходит.
         if self.player.health_points <= 0 and self.enemy.health_points <= 0:
-            self.game_is_running = False
-            self.battle_result = "Ничья"
-            return self.battle_result
+            self.battle_result = "Ничья!"
+            return self.end_game()
 
         if self.player.health_points <= 0:
-            self.game_is_running = False
-            self.battle_result = "Игрок проиграл битву"
-            return self.battle_result
+            self.battle_result = "Игрок проиграл битву!"
+            return self.end_game()
 
         if self.enemy.health_points <= 0:
-            self.game_is_running = False
-            self.battle_result = "Игрок выиграл битву"
-            return self.battle_result
+            self.battle_result = "Игрок выиграл битву!"
+            return self.end_game()
 
         return None
 
@@ -54,11 +51,11 @@ class Arena(metaclass=BaseSingleton):
         # Регенерация здоровья и стамины для игрока и врага за ход.
         # В этом методе к количеству стамины игрока и врага прибавляется константное значение.
         # Главное чтобы оно не превысило максимальные значения (используйте if).
-        stamina = round(self.player.stamina + self.STAMINA_PER_ROUND * self.player.unit_class.stamina, 1)
+        stamina = round(self.player.stamina + self.STAMINA_PER_ROUND, 1)
         stamina = stamina if stamina <= self.player.unit_class.max_stamina else self.player.unit_class.max_stamina
         self.player.stamina = stamina
 
-        stamina = round(self.enemy.stamina + self.STAMINA_PER_ROUND * self.enemy.unit_class.stamina, 1)
+        stamina = round(self.enemy.stamina + self.STAMINA_PER_ROUND, 1)
         stamina = stamina if stamina <= self.enemy.unit_class.max_stamina else self.enemy.unit_class.max_stamina
         self.enemy.stamina = stamina
 
@@ -73,10 +70,10 @@ class Arena(metaclass=BaseSingleton):
         if result:
             return result
 
-        self._stamina_regeneration()
-
-        result = self.enemy.hit(self.player)
-        # self._stamina_regeneration()
+        result = ""
+        if self.game_is_running:
+            self._stamina_regeneration()
+            result = self.enemy.hit(self.player)
 
         return result
 
@@ -84,18 +81,20 @@ class Arena(metaclass=BaseSingleton):
         # Кнопка "Завершения игры" - > return result: str.
         # Очищаем синглтон - self._instances = {}, останавливаем игру (game_is_running), возвращаем результат
         self._instances = {}
-        return ""
+        result = f"{self.battle_result}"
+        self.game_is_running = False
+        return result
 
     def player_hit(self) -> str:
         # Кнопка "Удар игрока" -> return result: str.
         # Получаем результат от функции self.player.hit, запускаем следующий ход, возвращаем результат удара строкой.
         result_hit = self.player.hit(self.enemy)
         result_next = self.next_turn()
-        return result_hit + " " + result_next
+        return f"{result_hit}\n{result_next}"
 
     def player_use_skill(self):
         # Кнопка "Игрок использует умение".
         # Получаем результат от функции self.use_skill, включаем следующий ход, возвращаем результат удара строкой.
         result_hit = self.player.use_skill(self.enemy)
         result_next = self.next_turn()
-        return result_hit + " " + result_next
+        return f"{result_hit}\n{result_next}"
