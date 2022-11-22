@@ -3,15 +3,15 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from unit import BaseUnit
+    from classes.unit import BaseUnit
 
 
 class Skill(ABC):
     """
     Базовый класс умения.
     """
-    user = None
-    target = None
+    user: BaseUnit
+    target: BaseUnit
 
     @property
     @abstractmethod
@@ -43,7 +43,7 @@ class Skill(ABC):
         self.user = user
         self.target = target
 
-        if self._is_stamina_enough:
+        if self._is_stamina_enough():
             return self.skill_effect()
 
         return f"{self.user.name} попытался использовать {self.name} но у него не хватило выносливости."

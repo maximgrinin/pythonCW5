@@ -17,8 +17,8 @@ class BaseUnit(ABC):
         self.unit_class = unit_class
         self.hp = unit_class.max_health
         self.stamina = unit_class.max_stamina
-        self.weapon = None
-        self.armor = None
+        self.weapon: Weapon
+        self.armor: Armor
         self._is_skill_used = False
 
     @property

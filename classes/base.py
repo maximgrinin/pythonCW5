@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 from classes.unit import BaseUnit
 
 
 class BaseSingleton(type):
-    _instances = {}
+    _instances: Dict[Any, Any] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
@@ -14,8 +14,8 @@ class BaseSingleton(type):
 
 class Arena(metaclass=BaseSingleton):
     STAMINA_PER_ROUND = 1
-    player = None
-    enemy = None
+    player: BaseUnit
+    enemy: BaseUnit
     game_is_running = False
     battle_result = None
 
@@ -80,7 +80,7 @@ class Arena(metaclass=BaseSingleton):
     def end_game(self) -> str:
         # Кнопка "Завершения игры" - > return result: str.
         # Очищаем синглтон - self._instances = {}, останавливаем игру (game_is_running), возвращаем результат
-        self._instances = {}
+        self._instances: Dict[Any, Any] = {}
         result = f"{self.battle_result}"
         self.game_is_running = False
         return result

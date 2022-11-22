@@ -40,11 +40,17 @@ class Equipment:
 
     def get_weapon(self, weapon_name) -> Optional[Weapon]:
         # Возвращает объект оружия по имени.
-        return next(filter(lambda weapon: weapon.name == weapon_name, self.equipment.weapons), None)
+        for weapon in self.equipment.weapons:
+            if weapon.name == weapon_name:
+                return weapon
+        return None
 
     def get_armor(self, armor_name) -> Optional[Armor]:
         # Возвращает объект брони по имени.
-        return next(filter(lambda armor: armor.name == armor_name, self.equipment.armors), None)
+        for armor in self.equipment.armors:
+            if armor.name == armor_name:
+                return armor
+        return None
 
     def get_weapons_names(self) -> list:
         # Возвращаем список с оружием.
