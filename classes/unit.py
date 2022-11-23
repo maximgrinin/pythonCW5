@@ -56,7 +56,8 @@ class BaseUnit(ABC):
 
         # После всех расчетов цель получает урон - target.get_damage(damage)
         damage = damage if damage > 0 else 0
-        target.get_damage(damage)
+        if damage > 0:
+            target.get_damage(damage)
 
         # и возвращаем предполагаемый урон для последующего вывода пользователю в текстовом виде.
         return damage
@@ -64,7 +65,9 @@ class BaseUnit(ABC):
     def get_damage(self, damage: float):
         # Получение урона целью.
         # Присваиваем новое значение для аттрибута self.hp.
-        self.hp = round(self.hp - damage, 1)
+        if damage > 0:
+            hp = round(self.hp - damage, 1)
+            self.hp = hp if hp > 0 else 0
 
     @abstractmethod
     def hit(self, target: BaseUnit) -> str:
